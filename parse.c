@@ -4341,6 +4341,12 @@ static Node *primary(Token **rest, Token *tok) {
     return node;
   }
 
+  if (equal(tok, "__builtin_unreachable")) {
+    tok = skip(tok->next, "(");
+    *rest = skip(tok, ")");
+    return new_node(ND_NULL_EXPR, tok);
+  }
+
   if (tok->kind == TK_IDENT) {
     // Variable or enum constant
     VarScope *sc = find_var(tok);
