@@ -31,6 +31,7 @@ StdVer opt_std;
 static StringArray opt_include;
 bool opt_E;
 bool opt_enable_universal_char;
+bool opt_general_regs_only;
 static bool opt_P;
 static bool opt_M;
 static bool opt_MD;
@@ -486,6 +487,11 @@ static int parse_args(int argc, char **argv) {
     if (set_bool(argv[i], true, "-Werror", &opt_werror) ||
       set_bool(argv[i], false, "-Wno-error", &opt_werror))
       continue;
+
+    if (!strcmp(argv[i], "-mgeneral-regs-only")) {
+      opt_general_regs_only = true;
+      continue;
+    }
 
     // These options are ignored for now.
     if (startswith(argv[i], &arg, "-W") ||

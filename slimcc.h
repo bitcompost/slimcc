@@ -680,6 +680,7 @@ bool file_exists(char *path);
 extern StringArray include_paths;
 extern bool opt_E;
 extern bool opt_enable_universal_char;
+extern bool opt_general_regs_only;
 extern bool opt_fpic;
 extern bool opt_fpie;
 extern bool opt_femulated_tls;

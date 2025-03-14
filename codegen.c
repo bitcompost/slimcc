@@ -557,7 +557,7 @@ static char *regop_ax(Type *ty) {
 static void gen_mem_copy2(char *sofs, char *sptr, char *dofs, char *dptr, int sz) {
   for (int i = 0; i < sz;) {
     int rem = sz - i;
-    if (rem >= 16) {
+    if (rem >= 16 && !opt_general_regs_only) {
       Printftn("movups %d+%s(%s), %%xmm0", i, sofs, sptr);
       Printftn("movups %%xmm0, %d+%s(%s)", i, dofs, dptr);
       i += 16;
@@ -579,7 +579,7 @@ static void gen_mem_copy(int sofs, char *sptr, int dofs, char *dptr, int sz) {
 }
 
 static void gen_mem_zero(int dofs, char *dptr, int sz) {
-  if (sz >= 16) {
+  if (sz >= 16 && !opt_general_regs_only) {
     Printstn("xorps %%xmm0, %%xmm0");
     for (int i = 0; i < sz;) {
       if (sz < i + 16)
@@ -4083,7 +4083,7 @@ void emit_text(Obj *fn) {
     case 4: Printftn("movq %%r8, -144(%s)", lvar_ptr);
     case 5: Printftn("movq %%r9, -136(%s)", lvar_ptr);
     }
-    if (fp_count < 8) {
+    if (fp_count < 8 && !opt_general_regs_only) {
       Printstn("test %%al, %%al");
       Printstn("je 1f");
       switch (fp_count) {
