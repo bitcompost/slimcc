@@ -1736,6 +1736,7 @@ static bool is_gnu_attr(Token *tok) {
     PutAttr("section");
     PutAttr("visibility");
     PutAttr("weak");
+    PutAttr("naked");
   }
   return hashmap_get2(&map, tok->loc, tok->len);
 }

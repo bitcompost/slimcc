@@ -4047,6 +4047,13 @@ void emit_text(Obj *fn) {
   Printftn(".type \"%s\", @function", asm_name(fn));
   Printfsn("\"%s\":", asm_name(fn));
 
+  if (fn->is_naked) {
+    current_fn = fn;
+    // Emit code
+    gen_stmt(fn->body);
+    return;
+  }
+
   bool rtn_by_stk = fn->ty->return_ty->size > 16;
   int gp_count = rtn_by_stk;
   int fp_count = 0;
@@ -4222,7 +4229,7 @@ void end_funcgen(void) {
   fclose(output_file);
   output_file = NULL;
 
-  {
+  if (!current_fn->is_naked) {
     char fmtbuf[STRBUF_SZ];
     int len;
     if (!strcmp(current_fn->name, "main"))

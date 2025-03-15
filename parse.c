@@ -39,6 +39,7 @@ typedef struct {
   bool is_weak;
   bool is_gnu_inline;
   bool is_returns_twice;
+  bool is_naked;
   bool local_only;
   bool is_ctor;
   bool is_dtor;
@@ -607,6 +608,7 @@ static void tyspec_attr(Token *tok, VarAttr *attr, TokenKind kind) {
   bool_attr(tok, kind, "weak", &attr->is_weak);
   bool_attr(tok, kind, "gnu_inline", &attr->is_gnu_inline);
   bool_attr(tok, kind, "returns_twice", &attr->is_returns_twice);
+  bool_attr(tok, kind, "naked", &attr->is_naked);
   cdtor_attr(tok, kind, "constructor", &attr->is_ctor, &attr->ctor_prior);
   cdtor_attr(tok, kind, "destructor", &attr->is_dtor, &attr->dtor_prior);
   str_attr(tok, kind, "alias", &attr->alias);
@@ -642,6 +644,9 @@ static void func_attr(Obj *fn, VarAttr *attr, Token *name, Token *tok) {
 
   fn->returns_twice |= attr->is_returns_twice;
   DeclAttr(bool_attr, "returns_twice", &fn->returns_twice);
+  
+  fn->is_naked |= attr->is_naked;
+  DeclAttr(bool_attr, "naked", &fn->is_naked);
 
   if (equal(tok, "{")) {
     bool is_gnu_inline = attr->is_gnu_inline;
