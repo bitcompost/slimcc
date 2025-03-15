@@ -3080,6 +3080,8 @@ static void asm_clobbers(Token *tok, int *x87_clobber) {
       continue;
     if (equal(tok, "\"memory\""))
       continue;
+    if (equal(tok, "\"flags\""))
+      continue;
 
     Reg r = ident_reg(tok);
     if (r == REG_SP)
