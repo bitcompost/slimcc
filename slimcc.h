@@ -184,10 +184,12 @@ ANON_UNION_END
 ANON_UNION_START
     int64_t ival;         // If kind is TK_INT_NUM, its value
     char *str;            // String literal contents including terminating '\0'
+    Token *label_next;
 ANON_UNION_END
 };
 
 void error(char *fmt, ...) FMTCHK(1,2) NORETURN;
+void error_ice(char *file, int32_t line) NORETURN;
 void error_at(char *loc, char *fmt, ...) FMTCHK(2,3) NORETURN;
 void error_tok(Token *tok, char *fmt, ...) FMTCHK(2,3) NORETURN;
 void warn_tok(Token *tok, char *fmt, ...) FMTCHK(2,3);
@@ -206,7 +208,7 @@ Type *convert_pp_number(Token *tok, int64_t *res_val, long double *res_fval);
 TokenKind ident_keyword(Token *tok);
 
 #define internal_error() \
-  error("internal error at %s:%d", __FILE__, __LINE__)
+  error_ice(__FILE__, __LINE__)
 
 //
 // preprocess.c
@@ -382,7 +384,6 @@ typedef enum {
   ND_FOR,       // "for" or "while"
   ND_DO,        // "do"
   ND_SWITCH,    // "switch"
-  ND_CASE,      // "case"
   ND_BLOCK,     // { ... }
   ND_GOTO,      // "goto"
   ND_GOTO_EXPR, // "goto" labels-as-values
@@ -406,6 +407,14 @@ typedef enum {
   ND_ARITH_ASSIGN,
   ND_POST_INCDEC
 } NodeKind;
+
+typedef struct CaseRange CaseRange;
+struct CaseRange {
+  CaseRange *next;
+  char *label;
+  int64_t lo;
+  int64_t hi;
+};
 
 // AST node type
 struct Node {
@@ -439,17 +448,13 @@ struct Node {
   Obj *args;
 
   // Goto or labeled statement, or labels-as-values
-  char *label;
+  Token *labels;
   char *unique_label;
   Node *goto_next;
 
   // Switch
-  Node *case_next;
-  Node *default_case;
-
-  // Case
-  long begin;
-  long end;
+  CaseRange *cases;
+  CaseRange *default_case;
 
   DeferStmt *defr_start;
   DeferStmt *defr_end;
@@ -476,9 +481,6 @@ struct Node {
   // Numeric literal
   int64_t val;
   long double fval;
-
-  // Cast evaluation
-  bool has_no_ptr;
 
   // Arithmetic Assignment
   NodeKind arith_kind;

@@ -25,6 +25,10 @@ void error(char *fmt, ...) {
   exit(1);
 }
 
+void error_ice(char *file, int32_t line) {
+  error("internal error at %s:%"PRIi32, file, line);
+}
+
 // Reports an error message in the following format.
 //
 // foo.c:10: x = y + 1;
@@ -155,7 +159,13 @@ static int read_ident(char *p) {
   char *start = p;
 
   for (;;) {
-    if (Isalnum(*p) || *p == '_' || *p == '$') {
+    if (*p == '$') {
+      if (opt_cc1_asm_pp)
+        break;
+      p++;
+      continue;
+    }
+    if (Isalnum(*p) || *p == '_') {
       p++;
       continue;
     }
@@ -167,8 +177,9 @@ static int read_ident(char *p) {
         continue;
       }
     }
-    return p - start;
+    break;
   }
+  return p - start;
 }
 
 static int from_hex(char c) {
@@ -207,6 +218,8 @@ static int read_punct(char *p) {
     return is_repeat + 1;
   case '.':
     return (is_repeat && p[2] == *p) ? 3 : 1;
+  case '$':
+    return opt_cc1_asm_pp;
   case '(':
   case ')':
   case ',':
@@ -449,7 +462,13 @@ static Token *new_pp_number(char *start, char *p) {
       p += 2;
       continue;
     }
-    if (Isalnum(*p) || *p == '_' || *p == '$') {
+    if (*p == '$') {
+      if (opt_cc1_asm_pp)
+        break;
+      p++;
+      continue;
+    }
+    if (Isalnum(*p) || *p == '_') {
       p++;
       continue;
     }
@@ -460,8 +479,9 @@ static Token *new_pp_number(char *start, char *p) {
         continue;
       }
     }
-    return new_token(TK_PP_NUM, start, p);
+    break;
   }
+  return new_token(TK_PP_NUM, start, p);
 }
 
 static bool convert_pp_int(char *loc, int len, Type **res_ty, int64_t *res_val) {
